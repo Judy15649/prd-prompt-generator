@@ -30,7 +30,7 @@
 
 ```bash
 # clone 專案
-git clone https://github.com/你的帳號/prd-prompt-generator.git
+git clone https://github.com/judy15649/prd-prompt-generator.git
 
 # 直接用瀏覽器開啟
 open index.html
