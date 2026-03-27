@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD Prompt 產生器 — 金融業 PM 協作工具</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D2545;
+    --navy-mid: #1A3A6B;
+    --navy-light: #2A5298;
+    --gold: #C9A227;
+    --gold-light: #E8C547;
+    --gold-pale: #FDF6E3;
+    --teal: #1B7A6E;
+    --teal-light: #E6F5F3;
+    --coral: #C94A2F;
+    --coral-light: #FDF0ED;
+    --bg: #F8F6F0;
+    --bg-card: #FFFFFF;
+    --text-primary: #1A1A2E;
+    --text-secondary: #4A5568;
+    --text-muted: #8896A7;
+    --border: #DDD8CC;
+    --border-strong: #B8B0A0;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(13,37,69,0.08);
+    --shadow-md: 0 4px 24px rgba(13,37,69,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--navy);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--gold);
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+  .logo-text h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.02em;
+  }
+  .logo-text p {
+    font-size: 13px;
+    color: #8FA8C8;
+    letter-spacing: 0.04em;
+  }
+  .header-badge {
+    background: rgba(201,162,39,0.15);
+    border: 1px solid rgba(201,162,39,0.4);
+    color: var(--gold-light);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  /* PROGRESS */
+  .progress-bar {
+    background: var(--navy-mid);
+    padding: 0 32px;
+  }
+  .progress-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: stretch;
+  }
+  .step-item {
+    flex: 1;
+    padding: 12px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    min-width: 0;
+  }
+  .step-item:hover { border-bottom-color: rgba(201,162,39,0.4); }
+  .step-item.active { border-bottom-color: var(--gold); }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.1);
+    color: #8FA8C8;
+    transition: all 0.2s;
+  }
+  .step-item.active .step-num {
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .step-item.done .step-num {
+    background: var(--teal);
+    color: #fff;
+  }
+  .step-label {
+    font-size: 13px;
+    color: #8FA8C8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .step-item.active .step-label { color: #fff; font-weight: 500; }
+  .step-item.done .step-label { color: #6DBDAF; }
+
+  /* MAIN */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-header {
+    margin-bottom: 28px;
+  }
+  .panel-header h2 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .panel-header p {
+    font-size: 15px;
+    color: var(--text-secondary);
+  }
+
+  /* ROLE CARDS */
+  .role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 768px) { .role-grid { grid-template-columns: 1fr; } }
+
+  .role-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .role-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+
+  .role-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .role-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .biz .role-avatar { background: #FDF0ED; }
+  .prod .role-avatar { background: #E6F5F3; }
+
+  .role-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .role-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .role-body { padding: 20px 24px; }
+
+  .field-group { margin-bottom: 20px; }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  .field-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 5px;
+  }
+
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    background: #FAFAF8;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  input[type="text"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--navy-light);
+    box-shadow: 0 0 0 3px rgba(42,82,152,0.1);
+    background: #fff;
+  }
+  textarea { min-height: 100px; }
+
+  /* TAGS */
+  .tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .tag-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .tag-btn:hover { border-color: var(--navy-light); color: var(--navy); }
+  .tag-btn.selected {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+  }
+  .tag-btn.selected.biz-tag {
+    background: var(--coral);
+    border-color: var(--coral);
+  }
+  .tag-btn.selected.prod-tag {
+    background: var(--teal);
+    border-color: var(--teal);
+  }
+
+  /* FILE UPLOAD */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #FAFAF8;
+  }
+  .upload-zone:hover { border-color: var(--navy-light); background: #F0F4FB; }
+  .upload-zone.dragover { border-color: var(--gold); background: var(--gold-pale); }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-label { font-size: 14px; color: var(--text-secondary); }
+  .upload-sublabel { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .upload-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .upload-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .upload-item-icon { font-size: 16px; }
+  .upload-item-name { flex: 1; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .upload-item-size { color: var(--text-muted); font-size: 12px; }
+  .upload-remove { cursor: pointer; color: var(--coral); font-size: 16px; padding: 0 4px; }
+  .upload-content-preview {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #F8F9FA;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    max-height: 80px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  input[type="file"] { display: none; }
+
+  /* SHARED FIELDS */
+  .shared-section {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    padding: 28px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow);
+  }
+  .shared-section h3 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: var(--radius-sm);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: var(--navy);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,37,69,0.25); }
+  .btn-gold {
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-outline {
+    background: transparent;
+    color: var(--navy);
+    border: 1.5px solid var(--navy);
+  }
+  .btn-outline:hover { background: var(--navy); color: #fff; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--border-strong); color: var(--text-primary); }
+  .btn-teal { background: var(--teal); color: #fff; }
+  .btn-teal:hover { background: #155E55; }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* PROMPT OUTPUT */
+  .output-container {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .output-toolbar {
+    background: #F5F3EE;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .output-toolbar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .output-toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .output-content {
+    padding: 28px;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 300px;
+    max-height: 600px;
+    overflow-y: auto;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .output-empty {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .output-section-title {
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 16px;
+    margin: 8px 0 4px;
+  }
+
+  /* COPY SUCCESS */
+  .copy-toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--teal);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .copy-toast.show { opacity: 1; transform: translateY(0); }
+
+  /* REVIEW CARDS */
+  .review-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) { .review-grid { grid-template-columns: 1fr; } }
+
+  .review-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+  }
+  .review-card-header {
+    padding: 14px 18px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .review-card-header.biz { background: var(--coral-light); color: var(--coral); }
+  .review-card-header.prod { background: var(--teal-light); color: var(--teal); }
+  .review-card-body { padding: 16px 18px; font-size: 14px; line-height: 1.7; color: var(--text-secondary); }
+  .review-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .review-row:last-child { margin-bottom: 0; }
+  .review-label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .review-val { color: var(--text-primary); font-size: 14px; }
+  .review-val.empty { color: var(--text-muted); font-style: italic; }
+
+  /* INFO BOX */
+  .info-box {
+    background: #EFF4FB;
+    border: 1px solid #BCD0EE;
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #1A3A6B;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  /* LOADING */
+  .loading-bar {
+    display: none;
+    height: 3px;
+    background: linear-gradient(90deg, var(--navy) 0%, var(--gold) 50%, var(--teal) 100%);
+    border-radius: 2px;
+    margin: 12px 0;
+    animation: loading-anim 1.5s infinite;
+    background-size: 200%;
+  }
+  @keyframes loading-anim {
+    0% { background-position: 0%; }
+    100% { background-position: 200%; }
+  }
+  .loading-bar.show { display: block; }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 28px 0;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .header-inner { padding: 12px 16px; }
+    .progress-bar { padding: 0 8px; }
+    main { padding: 20px 16px 60px; }
+    .step-label { font-size: 11px; }
+    .btn { padding: 10px 18px; font-size: 14px; }
+    .shared-section { padding: 20px 16px; }
+    .role-body { padding: 16px; }
+    .role-header { padding: 16px; }
+    .output-content { padding: 18px; }
+  }
+
+  /* Chips for categories */
+  .cat-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat-chip {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    background: #EEF2F8;
+    color: var(--navy-mid);
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .cat-chip:hover { border-color: var(--navy-light); background: #E0E8F5; }
+  .cat-chip.sel { background: var(--navy); color: #fff; border-color: var(--navy); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">PRD</div>
+      <div class="logo-text">
+        <h1>PRD Prompt 產生器</h1>
+        <p>金融業 PM 協作工具 · Financial PM Collaboration</p>
+      </div>
+    </div>
+    <div class="header-badge">v2.0 · 2026</div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-inner">
+      <div class="step-item active" id="step-tab-1" onclick="goStep(1)">
+        <div class="step-num" id="step-num-1">1</div>
+        <span class="step-label">業務 PM 輸入</span>
+      </div>
+      <div class="step-item" id="step-tab-2" onclick="goStep(2)">
+        <div class="step-num" id="step-num-2">2</div>
+        <span class="step-label">產品 PM 輸入</span>
+      </div>
+      <div class="step-item" id="step-tab-3" onclick="goStep(3)">
+        <div class="step-num" id="step-num-3">3</div>
+        <span class="step-label">共同設定</span>
+      </div>
+      <div class="step-item" id="step-tab-4" onclick="goStep(4)">
+        <div class="step-num" id="step-num-4">4</div>
+        <span class="step-label">確認 &amp; 產生</span>
+      </div>
+      <div class="step-item" id="step-tab-5" onclick="goStep(5)">
+        <div class="step-num" id="step-num-5">5</div>
+        <span class="step-label">PRD Prompt</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ===== STEP 1: 業務 PM ===== -->
+<div class="panel active" id="panel-1">
+  <div class="panel-header">
+    <h2>👔 業務 PM 輸入</h2>
+    <p>業務 PM 負責業務邏輯、業管需求與業務策略，請填入您負責的需求範圍</p>
+  </div>
+
+  <div class="role-grid">
+    <div class="role-card biz">
+      <div class="role-header">
+        <div class="role-avatar">👔</div>
+        <div>
+          <div class="role-title">業務需求定義</div>
+          <div class="role-subtitle">Business Requirements</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="field-group">
+          <label class="field-label">功能名稱 / 專案名稱 *</label>
+          <input type="text" id="biz-feature-name" placeholder="例：財富管理客戶篩選介面優化" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">業務背景與目標</label>
+          <textarea id="biz-background" rows="4" placeholder="例：目前理專在使用客戶篩選功能時，需花費大量時間手動篩選，導致服務效率低落。此次改版目標為提升理專日均服務客戶數 20%，並降低操作錯誤率。"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">業管需求 / 法遵規範</label>
+          <textarea id="biz-compliance" rows="3" placeholder="例：需符合洗錢防制 AML 規定、客戶適合度評估 (KYC) 規範、金管會相關函令等"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">業務策略方向</label>
+          <textarea id="biz-strategy" rows="3" placeholder="例：配合 Q3 財富管理業務擴展計畫，優先服務 AUM 500 萬以上客戶，強化高資產客戶體驗"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-card biz">
+      <div class="role-header">
+        <div class="role-avatar">📊</div>
+        <div>
+          <div class="role-title">使用者與業務情境</div>
+          <div class="role-subtitle">Users &amp; Business Context</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="field-group">
+          <label class="field-label">主要使用者 / 角色</label>
+          <div class="tags-row" id="biz-user-tags">
+            <button class="tag-btn biz-tag" onclick="toggleTag(this,'biz-users','理專')">理專</button>
+            <button class="tag-btn biz-tag" onclick="toggleTag(this,'biz-users','客服人員')">客服人員</button>
+            <button class="tag-btn biz-tag" onclick="toggleTag(this,'biz-users','業務主管')">業務主管</button>
+            <button class="tag-btn biz-tag" onclick="toggleTag(this,'biz-users','後台作業員')">後台作業員</button>
+            <button class="tag-btn biz-tag" onclick="toggleTag(this,'biz-users','一般客戶')">一般客戶</button>
+            <button class="tag-btn biz-tag" onclick="toggleTag(this,'biz-users','法人客戶')">法人客戶</button>
+          </div>
+          <div class="field-hint">可多選，或在下方補充說明</div>
+          <input type="text" id="biz-users-custom" placeholder="其他使用者描述（選填）" style="margin-top:8px;" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">核心業務痛點</label>
+          <textarea id="biz-painpoints" rows="3" placeholder="例：1. 理專每日需手動翻查 Excel，耗時約 2 小時&#10;2. 客戶資料散落於多個系統，無法即時整合&#10;3. 業績達標計算不透明，影響士氣"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">業務 KPI / 成功指標</label>
+          <textarea id="biz-kpi" rows="3" placeholder="例：• 理專日均拜訪客戶數提升 20%&#10;• 客戶資料查詢時間縮短至 30 秒以內&#10;• 業務操作錯誤率降低 50%"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shared-section">
+    <h3>📎 業務規劃文件上傳</h3>
+    <div class="info-box">
+      <span>ℹ️</span>
+      <span>可上傳業務規劃書、需求訪談記錄、業管規範文件等，系統將提取關鍵內容整合至 PRD Prompt 中（支援 .txt、.md 純文字格式；PDF 及 Word 需先轉為文字）</span>
+    </div>
+    <div class="upload-zone" id="biz-upload-zone" onclick="document.getElementById('biz-file-input').click()" ondragover="handleDragOver(event,'biz-upload-zone')" ondragleave="handleDragLeave(event,'biz-upload-zone')" ondrop="handleDrop(event,'biz','biz-upload-zone')">
+      <div class="upload-icon">📂</div>
+      <div class="upload-label">點擊或拖曳上傳業務文件</div>
+      <div class="upload-sublabel">支援 .txt、.md 文字格式</div>
+    </div>
+    <input type="file" id="biz-file-input" accept=".txt,.md" multiple onchange="handleFileSelect(event,'biz')">
+    <div class="upload-list" id="biz-file-list"></div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-primary" onclick="goStep(2)">下一步：產品 PM 輸入 →</button>
+  </div>
+</div>
+
+<!-- ===== STEP 2: 產品 PM ===== -->
+<div class="panel" id="panel-2">
+  <div class="panel-header">
+    <h2>💻 產品 PM 輸入</h2>
+    <p>產品 PM 負責產品發展方向、產品體驗與電文規格，請填入您負責的需求範圍</p>
+  </div>
+
+  <div class="role-grid">
+    <div class="role-card prod">
+      <div class="role-header">
+        <div class="role-avatar">🎯</div>
+        <div>
+          <div class="role-title">產品方向與體驗</div>
+          <div class="role-subtitle">Product Direction &amp; UX</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="field-group">
+          <label class="field-label">產品發展方向</label>
+          <textarea id="prod-direction" rows="3" placeholder="例：朝向 AI 輔助理財顧問方向發展，強化個人化推薦功能，提升 APP 使用黏著度，與現有財富管理平台深度整合"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">使用者體驗目標</label>
+          <textarea id="prod-ux" rows="3" placeholder="例：• 操作步驟從 7 步驟減少至 3 步驟&#10;• 首次使用學習時間不超過 5 分鐘&#10;• 介面符合 WCAG 2.1 AA 無障礙標準"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">介面設計考量 / 設計原則</label>
+          <textarea id="prod-design" rows="3" placeholder="例：採用卡片式設計，重要資訊優先呈現；色彩使用公司品牌色系；支援深色模式；空白狀態需提供引導說明"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">功能類型</label>
+          <div class="cat-chips" id="prod-func-type">
+            <span class="cat-chip" onclick="toggleChip(this,'prod-func-types','新功能')">新功能</span>
+            <span class="cat-chip" onclick="toggleChip(this,'prod-func-types','介面改版')">介面改版</span>
+            <span class="cat-chip" onclick="toggleChip(this,'prod-func-types','流程優化')">流程優化</span>
+            <span class="cat-chip" onclick="toggleChip(this,'prod-func-types','系統整合')">系統整合</span>
+            <span class="cat-chip" onclick="toggleChip(this,'prod-func-types','資料展示')">資料展示</span>
+            <span class="cat-chip" onclick="toggleChip(this,'prod-func-types','權限設定')">權限設定</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-card prod">
+      <div class="role-header">
+        <div class="role-avatar">🔌</div>
+        <div>
+          <div class="role-title">技術規格</div>
+          <div class="role-subtitle">Technical Specifications</div>
+        </div>
+      </div>
+      <div class="role-body">
+        <div class="field-group">
+          <label class="field-label">電文 / API 規格重點</label>
+          <textarea id="prod-api" rows="4" placeholder="例：• 查詢客戶資料：GET /api/v2/customers/{id}，回應時間 < 500ms&#10;• 批次更新：支援最多 100 筆/次&#10;• 需串接核心系統 SOAP API&#10;• 資料加密需符合 TLS 1.3 標準"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">平台 / 裝置需求</label>
+          <div class="tags-row">
+            <button class="tag-btn prod-tag" onclick="toggleTag(this,'prod-platforms','Web 後台')">Web 後台</button>
+            <button class="tag-btn prod-tag" onclick="toggleTag(this,'prod-platforms','行動 APP (iOS)')">行動 APP (iOS)</button>
+            <button class="tag-btn prod-tag" onclick="toggleTag(this,'prod-platforms','行動 APP (Android)')">行動 APP (Android)</button>
+            <button class="tag-btn prod-tag" onclick="toggleTag(this,'prod-platforms','平板')">平板</button>
+            <button class="tag-btn prod-tag" onclick="toggleTag(this,'prod-platforms','桌面版 APP')">桌面版 APP</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">相依系統 / 整合需求</label>
+          <textarea id="prod-integration" rows="3" placeholder="例：需整合：核心銀行系統 (CBS)、CRM 系統、財富管理平台 WMS、風控系統 RISK01"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">非功能需求</label>
+          <textarea id="prod-nfr" rows="3" placeholder="例：• 系統可用性 99.9% SLA&#10;• 支援 1,000 concurrent users&#10;• 資料保留期限 7 年&#10;• 符合個資法、GDPR 要求"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-ghost" onclick="goStep(1)">← 上一步</button>
+    <button class="btn btn-primary" onclick="goStep(3)">下一步：共同設定 →</button>
+  </div>
+</div>
+
+<!-- ===== STEP 3: 共同設定 ===== -->
+<div class="panel" id="panel-3">
+  <div class="panel-header">
+    <h2>⚙️ 共同設定</h2>
+    <p>設定 AI 產出 PRD 的格式要求與輸出重點</p>
+  </div>
+
+  <div class="shared-section">
+    <h3>📋 PRD 輸出段落選擇</h3>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">選擇希望 AI 協助產出的 PRD 段落（可多選）</p>
+    <div class="cat-chips" id="prd-sections">
+      <span class="cat-chip sel" onclick="toggleChip(this,'prd-section-list','背景 & 目標')">背景 &amp; 目標</span>
+      <span class="cat-chip sel" onclick="toggleChip(this,'prd-section-list','使用者故事')">使用者故事</span>
+      <span class="cat-chip" onclick="toggleChip(this,'prd-section-list','功能需求')">功能需求</span>
+      <span class="cat-chip" onclick="toggleChip(this,'prd-section-list','非功能需求')">非功能需求</span>
+      <span class="cat-chip sel" onclick="toggleChip(this,'prd-section-list','設計考量 / UX 原則')">設計考量 / UX 原則</span>
+      <span class="cat-chip" onclick="toggleChip(this,'prd-section-list','API / 電文規格')">API / 電文規格</span>
+      <span class="cat-chip sel" onclick="toggleChip(this,'prd-section-list','驗收標準 (AC)')">驗收標準 (AC)</span>
+      <span class="cat-chip" onclick="toggleChip(this,'prd-section-list','業管法遵需求')">業管法遵需求</span>
+      <span class="cat-chip" onclick="toggleChip(this,'prd-section-list','範圍外 (Out of Scope)')">範圍外 (Out of Scope)</span>
+      <span class="cat-chip" onclick="toggleChip(this,'prd-section-list','待釐清問題')">待釐清問題</span>
+      <span class="cat-chip" onclick="toggleChip(this,'prd-section-list','風險與假設')">風險與假設</span>
+    </div>
+  </div>
+
+  <div class="shared-section">
+    <h3>🎯 優先級與時程</h3>
+    <div class="role-grid">
+      <div class="field-group">
+        <label class="field-label">業務優先級</label>
+        <select id="biz-priority">
+          <option value="">請選擇</option>
+          <option value="P0 - 緊急 (本季必上)">P0 - 緊急 (本季必上)</option>
+          <option value="P1 - 高 (下季完成)">P1 - 高 (下季完成)</option>
+          <option value="P2 - 中 (半年內)">P2 - 中 (半年內)</option>
+          <option value="P3 - 低 (Backlog)">P3 - 低 (Backlog)</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">預計上線時程</label>
+        <input type="text" id="timeline" placeholder="例：2026 Q3、2026 年 9 月 30 日" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">預計開發工期</label>
+        <input type="text" id="dev-duration" placeholder="例：3 個月、12 週" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">專案代號 / JIRA 編號</label>
+        <input type="text" id="project-code" placeholder="例：PROJ-2026-Q3-001" />
+      </div>
+    </div>
+  </div>
+
+  <div class="shared-section">
+    <h3>🤖 AI 輸出格式指示</h3>
+    <div class="role-grid">
+      <div class="field-group">
+        <label class="field-label">輸出語言</label>
+        <select id="output-lang">
+          <option value="繁體中文">繁體中文</option>
+          <option value="英文">英文</option>
+          <option value="中英雙語">中英雙語</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">PRD 詳細程度</label>
+        <select id="output-detail">
+          <option value="完整詳細版（含所有欄位與範例）">完整詳細版（含所有欄位與範例）</option>
+          <option value="標準版（核心段落，適合初版草稿）">標準版（核心段落，適合初版草稿）</option>
+          <option value="精簡版（重點摘要，適合快速對齊）">精簡版（重點摘要，適合快速對齊）</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">補充說明 / 特殊需求</label>
+      <textarea id="extra-notes" rows="3" placeholder="例：請特別注意法遵相關條款的撰寫方式需符合業管單位習慣；驗收標準請以 Given-When-Then 格式撰寫"></textarea>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-ghost" onclick="goStep(2)">← 上一步</button>
+    <button class="btn btn-primary" onclick="goStep(4)">下一步：確認 &amp; 產生 →</button>
+  </div>
+</div>
+
+<!-- ===== STEP 4: 確認 ===== -->
+<div class="panel" id="panel-4">
+  <div class="panel-header">
+    <h2>✅ 確認 &amp; 產生 PRD Prompt</h2>
+    <p>請確認以下整合後的輸入資訊，再產生 PRD Prompt</p>
+  </div>
+
+  <div class="review-grid" id="review-content">
+    <!-- Filled by JS -->
+  </div>
+
+  <div class="loading-bar" id="loading-bar"></div>
+
+  <div class="action-row">
+    <button class="btn btn-ghost" onclick="goStep(3)">← 上一步</button>
+    <button class="btn btn-gold" onclick="generatePrompt()">⚡ 產生 PRD Prompt</button>
+  </div>
+</div>
+
+<!-- ===== STEP 5: 輸出 ===== -->
+<div class="panel" id="panel-5">
+  <div class="panel-header">
+    <h2>📄 PRD Prompt 輸出</h2>
+    <p>整合兩方輸入後產出的 AI 可讀 PRD Prompt，可直接複製至 ChatGPT、Claude 等 AI 工具使用</p>
+  </div>
+
+  <div class="output-container">
+    <div class="output-toolbar">
+      <div class="output-toolbar-title">
+        <span>📝</span>
+        <span>整合 PRD Prompt</span>
+        <span id="output-char-count" style="font-weight:400;color:var(--text-muted);font-size:12px;"></span>
+      </div>
+      <div class="output-toolbar-actions">
+        <button class="btn btn-ghost" style="padding:8px 16px;font-size:13px;" onclick="copyPrompt()">📋 複製全文</button>
+        <button class="btn btn-teal" style="padding:8px 16px;font-size:13px;" onclick="downloadPrompt()">⬇️ 下載 .txt</button>
+      </div>
+    </div>
+    <div class="output-content" id="output-content">
+      <div class="output-empty">PRD Prompt 將在此處顯示...</div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+    <button class="btn btn-outline" onclick="goStep(1)">🔄 重新輸入</button>
+    <button class="btn btn-ghost" onclick="goStep(4)">← 回到確認頁</button>
+  </div>
+</div>
+
+</main>
+
+<div class="copy-toast" id="copy-toast">✅ 已複製到剪貼簿</div>
+
+<script>
+// ===== STATE =====
+let state = {
+  step: 1,
+  bizUsers: new Set(),
+  prodPlatforms: new Set(),
+  prodFuncTypes: new Set(),
+  prdSectionList: new Set(['背景 & 目標','使用者故事','設計考量 / UX 原則','驗收標準 (AC)']),
+  bizFiles: [],
+  generatedPrompt: ''
+};
+
+// ===== NAVIGATION =====
+function goStep(n) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+  document.getElementById('step-tab-'+n).classList.add('active');
+  for (let i = 1; i < n; i++) {
+    document.getElementById('step-tab-'+i).classList.add('done');
+    document.getElementById('step-num-'+i).textContent = '✓';
+  }
+  state.step = n;
+  if (n === 4) renderReview();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ===== TAGS =====
+function toggleTag(btn, stateKey, value) {
+  btn.classList.toggle('selected');
+  if (btn.classList.contains('selected')) state[stateKey].add(value);
+  else state[stateKey].delete(value);
+}
+
+const _chipKeyMap = {
+  'prd-section-list': 'prdSectionList',
+  'prod-func-types':  'prodFuncTypes',
+};
+function toggleChip(chip, stateKey, value) {
+  const key = _chipKeyMap[stateKey] || stateKey;
+  chip.classList.toggle('sel');
+  if (chip.classList.contains('sel')) state[key].add(value);
+  else state[key].delete(value);
+}
+
+// ===== FILE UPLOAD =====
+function handleDragOver(e, zoneId) {
+  e.preventDefault();
+  document.getElementById(zoneId).classList.add('dragover');
+}
+function handleDragLeave(e, zoneId) {
+  document.getElementById(zoneId).classList.remove('dragover');
+}
+function handleDrop(e, role, zoneId) {
+  e.preventDefault();
+  document.getElementById(zoneId).classList.remove('dragover');
+  processFiles(e.dataTransfer.files, role);
+}
+function handleFileSelect(e, role) {
+  processFiles(e.target.files, role);
+}
+function processFiles(files, role) {
+  Array.from(files).forEach(file => {
+    if (file.size > 5 * 1024 * 1024) { alert('檔案大小不可超過 5MB'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const entry = { name: file.name, size: file.size, content: e.target.result };
+      state.bizFiles.push(entry);
+      renderFileList(role);
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
+}
+function renderFileList(role) {
+  const list = document.getElementById(role+'-file-list');
+  list.innerHTML = '';
+  state.bizFiles.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'upload-item';
+    div.innerHTML = `<span class="upload-item-icon">📄</span><span class="upload-item-name">${f.name}</span><span class="upload-item-size">${(f.size/1024).toFixed(1)} KB</span><span class="upload-remove" onclick="removeFile(${i},'${role}')">✕</span>`;
+    list.appendChild(div);
+    if (f.content) {
+      const preview = document.createElement('div');
+      preview.className = 'upload-content-preview';
+      preview.textContent = f.content.substring(0, 300) + (f.content.length > 300 ? '...' : '');
+      list.appendChild(preview);
+    }
+  });
+}
+function removeFile(i, role) {
+  state.bizFiles.splice(i, 1);
+  renderFileList(role);
+}
+
+// ===== REVIEW =====
+function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function renderReview() {
+  const container = document.getElementById('review-content');
+  const bizData = [
+    {label:'功能名稱',v: val('biz-feature-name')},
+    {label:'業務背景',v: val('biz-background')},
+    {label:'業管法遵',v: val('biz-compliance')},
+    {label:'業務策略',v: val('biz-strategy')},
+    {label:'主要使用者',v: [...state.bizUsers].join('、') || val('biz-users-custom')},
+    {label:'業務痛點',v: val('biz-painpoints')},
+    {label:'KPI',v: val('biz-kpi')},
+    {label:'上傳文件',v: state.bizFiles.map(f=>f.name).join('、') || '無'},
+  ];
+  const prodData = [
+    {label:'產品發展方向',v: val('prod-direction')},
+    {label:'UX 目標',v: val('prod-ux')},
+    {label:'設計考量',v: val('prod-design')},
+    {label:'功能類型',v: [...state.prodFuncTypes].join('、')},
+    {label:'電文/API 規格',v: val('prod-api')},
+    {label:'平台需求',v: [...state.prodPlatforms].join('、')},
+    {label:'相依系統',v: val('prod-integration')},
+    {label:'非功能需求',v: val('prod-nfr')},
+  ];
+  container.innerHTML = `
+    <div class="review-card">
+      <div class="review-card-header biz">👔 業務 PM 輸入摘要</div>
+      <div class="review-card-body">${bizData.map(d=>`<div class="review-row"><span class="review-label">${d.label}</span><span class="review-val ${d.v?'':'empty'}">${d.v || '（未填寫）'}</span></div>`).join('')}</div>
+    </div>
+    <div class="review-card">
+      <div class="review-card-header prod">💻 產品 PM 輸入摘要</div>
+      <div class="review-card-body">${prodData.map(d=>`<div class="review-row"><span class="review-label">${d.label}</span><span class="review-val ${d.v?'':'empty'}">${d.v || '（未填寫）'}</span></div>`).join('')}</div>
+    </div>
+  `;
+}
+
+// ===== GENERATE PROMPT =====
+async function generatePrompt() {
+  const bar = document.getElementById('loading-bar');
+  bar.classList.add('show');
+  
+  const sections = [...state.prdSectionList];
+  const bizUsers = [...state.bizUsers];
+  const prodPlatforms = [...state.prodPlatforms];
+  const prodFuncTypes = [...state.prodFuncTypes];
+  
+  let fileContext = '';
+  if (state.bizFiles.length > 0) {
+    fileContext = '\n\n## 參考文件內容\n';
+    state.bizFiles.forEach(f => {
+      fileContext += `\n### 文件：${f.name}\n${f.content.substring(0, 2000)}${f.content.length > 2000 ? '\n[...內容截斷...]' : ''}\n`;
+    });
+  }
+
+  const userInput = `
+# 角色：業務 PM 輸入
+功能名稱：${val('biz-feature-name') || '（未填）'}
+業務背景與目標：${val('biz-background') || '（未填）'}
+業管需求/法遵規範：${val('biz-compliance') || '（未填）'}
+業務策略方向：${val('biz-strategy') || '（未填）'}
+主要使用者角色：${bizUsers.join('、') || val('biz-users-custom') || '（未填）'}
+核心業務痛點：${val('biz-painpoints') || '（未填）'}
+業務KPI/成功指標：${val('biz-kpi') || '（未填）'}
+
+# 角色：產品 PM 輸入
+產品發展方向：${val('prod-direction') || '（未填）'}
+使用者體驗目標：${val('prod-ux') || '（未填）'}
+介面設計考量：${val('prod-design') || '（未填）'}
+功能類型：${prodFuncTypes.join('、') || '（未填）'}
+電文/API規格：${val('prod-api') || '（未填）'}
+平台/裝置需求：${prodPlatforms.join('、') || '（未填）'}
+相依系統整合：${val('prod-integration') || '（未填）'}
+非功能需求：${val('prod-nfr') || '（未填）'}
+
+# 共同設定
+業務優先級：${val('biz-priority') || '（未填）'}
+預計上線時程：${val('timeline') || '（未填）'}
+開發工期：${val('dev-duration') || '（未填）'}
+專案代號：${val('project-code') || '（未填）'}
+輸出語言：${val('output-lang') || '繁體中文'}
+PRD詳細程度：${val('output-detail') || '標準版'}
+希望產出的PRD段落：${sections.join('、') || '（全部）'}
+補充說明：${val('extra-notes') || '（無）'}
+${fileContext}`;
+
+  const systemPrompt = `你是一位資深的金融業產品需求分析師，專精於撰寫清晰、結構化、AI 可讀的 PRD（Product Requirements Document）Prompt。
+
+你的任務是根據「業務PM」與「產品PM」兩方的輸入，整合成一份完整的 PRD Prompt，讓 AI 工具（如 Claude、ChatGPT）能夠根據此 Prompt 產出高品質的 PRD 文件。
+
+請注意：
+1. 整合兩方視角，業務邏輯與產品體驗並重
+2. 保留金融業專業術語（如 KYC、AML、核心系統、電文等）
+3. 驗收標準（AC）請以 Given-When-Then 格式撰寫
+4. 輸出一份完整的 PRD Prompt，讓 AI 一看就能開始撰寫 PRD
+5. Prompt 開頭明確說明角色設定、任務目標、輸出格式要求
+6. 使用清晰的 Markdown 結構，段落分明
+7. 若有上傳文件內容，請從中提取關鍵資訊整合進 Prompt`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userInput }]
+      })
+    });
+    const data = await response.json();
+    let text = data.content?.map(c => c.text || '').join('\n') || '';
+    if (!text) throw new Error('No response');
+    state.generatedPrompt = text;
+    bar.classList.remove('show');
+    renderOutput(text);
+    goStep(5);
+  } catch(e) {
+    bar.classList.remove('show');
+    state.generatedPrompt = buildFallbackPrompt();
+    renderOutput(state.generatedPrompt);
+    goStep(5);
+  }
+}
+
+function buildFallbackPrompt() {
+  const sections = [...state.prdSectionList];
+  const bizUsers = [...state.bizUsers];
+  const prodPlatforms = [...state.prodPlatforms];
+
+  let prompt = `# PRD 撰寫 Prompt — 金融業產品需求文件
+
+## 角色設定
+你是一位資深金融科技產品需求分析師，具備以下背景：
+- 深度理解金融業務邏輯、業管法規與合規需求（AML、KYC、金管會規範）
+- 熟悉銀行核心系統架構、API 電文規格、前後台串接
+- 具備豐富的使用者體驗設計知識，了解金融使用者的操作習慣
+
+---
+
+## 任務目標
+請根據以下業務 PM 與產品 PM 的整合需求，撰寫一份完整的 PRD（產品需求規格書）。
+
+---
+
+## 業務 PM 提供的需求（業務邏輯、業管法遵、業務策略）
+
+**功能名稱**
+${val('biz-feature-name') || '請補充功能名稱'}
+
+**業務背景與目標**
+${val('biz-background') || '請補充業務背景'}
+
+**業管需求 / 法遵規範**
+${val('biz-compliance') || '請補充業管需求'}
+
+**業務策略方向**
+${val('biz-strategy') || '請補充業務策略'}
+
+**主要使用者角色**
+${bizUsers.length > 0 ? bizUsers.join('、') : val('biz-users-custom') || '請補充使用者'}
+
+**核心業務痛點**
+${val('biz-painpoints') || '請補充痛點'}
+
+**業務 KPI / 成功指標**
+${val('biz-kpi') || '請補充 KPI'}
+
+---
+
+## 產品 PM 提供的需求（產品體驗、技術規格、電文）
+
+**產品發展方向**
+${val('prod-direction') || '請補充產品方向'}
+
+**使用者體驗目標**
+${val('prod-ux') || '請補充 UX 目標'}
+
+**介面設計考量 / 設計原則**
+${val('prod-design') || '請補充設計考量'}
+
+**電文 / API 規格重點**
+${val('prod-api') || '請補充電文規格'}
+
+**平台 / 裝置需求**
+${prodPlatforms.length > 0 ? prodPlatforms.join('、') : '請補充平台需求'}
+
+**相依系統 / 整合需求**
+${val('prod-integration') || '請補充系統整合'}
+
+**非功能需求**
+${val('prod-nfr') || '請補充非功能需求'}
+
+---
+
+## PRD 輸出格式要求
+
+請依序產出以下段落：
+${sections.map((s,i) => `${i+1}. ${s}`).join('\n')}
+
+**詳細程度：** ${val('output-detail') || '標準版'}
+**輸出語言：** ${val('output-lang') || '繁體中文'}
+**優先級：** ${val('biz-priority') || '（未設定）'}
+**預計上線：** ${val('timeline') || '（未設定）'}
+${val('extra-notes') ? `\n**特殊要求：**\n${val('extra-notes')}` : ''}
+${state.bizFiles.length > 0 ? `\n**參考文件：** ${state.bizFiles.map(f=>f.name).join('、')}` : ''}
+
+---
+
+## 撰寫規範
+1. 使用者故事格式：「身為 [角色]，我希望 [功能]，以便 [業務目的]」
+2. 驗收標準（AC）使用 Given-When-Then 格式
+3. 功能需求需區分 Must Have / Should Have / Nice to Have
+4. 業管法遵需求需單獨列出，並標注對應法規條文
+5. API 電文規格需包含：端點、方法、請求/回應格式、逾時設定、錯誤碼
+
+請開始撰寫 PRD：`;
+
+  return prompt;
+}
+
+function renderOutput(text) {
+  const el = document.getElementById('output-content');
+  el.textContent = text;
+  document.getElementById('output-char-count').textContent = `共 ${text.length.toLocaleString()} 字`;
+}
+
+// ===== COPY / DOWNLOAD =====
+function copyPrompt() {
+  if (!state.generatedPrompt) return;
+  navigator.clipboard.writeText(state.generatedPrompt).then(() => {
+    const t = document.getElementById('copy-toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  });
+}
+
+function downloadPrompt() {
+  if (!state.generatedPrompt) return;
+  const name = (val('biz-feature-name') || 'PRD-Prompt').replace(/\s+/g, '-');
+  const blob = new Blob([state.generatedPrompt], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${name}-PRD-Prompt.txt`;
+  a.click();
+}
+
+// ===== INIT =====
+// Pre-select default chips
+document.querySelectorAll('#prd-sections .cat-chip.sel').forEach(c => {
+  const txt = c.textContent.trim();
+  state.prdSectionList.add(txt);
+});
+</script>
+</body>
+</html>
